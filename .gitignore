@@ -1,0 +1,4 @@
+config.php
+secure_logs/
+storage/
+.DS_Store
