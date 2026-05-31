@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!empty($username) && !empty($password)) {
         // Query the entry registry matching the unique username
-        $stmt = $conn->prepare("SELECT id, password_hash, role FROM users WHERE username = ?");
+        $stmt = $conn->prepare("SELECT id, password_hash, role, enc_salt FROM users WHERE username = ?");
         $stmt->bind_param("s", $username);
         $stmt->execute();
         
@@ -43,10 +43,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $username;
-                $_SESSION['role'] = $user['role']; 
-                
-                // --- CRYPTOGRAPHIC DATA-AT-REST ENCRYPTION KEY ---
-                $_SESSION['encryption_key'] = bin2hex(random_bytes(32));
+                $_SESSION['role'] = $user['role'];
+
+                // --- STABLE ENCRYPTION KEY DERIVATION (PBKDF2) ---
+                // Derived deterministically from the user's password + their stored per-user salt.
+                // Identical inputs always produce the same key, so encrypted files remain
+                // readable across session expiry, server restarts, and re-logins.
+                // The plaintext password is available only here at login — the ideal derivation point.
+                $derived_key = hash_pbkdf2('sha256', $password, $user['enc_salt'], 200000, 32, true);
+                $_SESSION['encryption_key'] = bin2hex($derived_key);
                 
                 write_security_log($username, "LOGIN_SUCCESS", "Authenticated as role: " . $user['role']);
                 

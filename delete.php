@@ -1,16 +1,26 @@
 <?php
 require_once 'config.php';
 
-// 1. Enforce Authentication Check
+// 1. Authentication check
 if (!isset($_SESSION['user_id'])) {
-    die("Access Denied: Unauthenticated.");
+    header("Location: login.php");
+    exit;
 }
 
+// 2. Must be a POST request — GET cannot trigger destructive actions
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: upload.php");
+    exit;
+}
+
+// 3. CSRF verification
+verify_csrf_token();
+
 $user_id = $_SESSION['user_id'];
-$file_id = $_GET['file_id'] ?? 0;
+$file_id = intval($_POST['file_id'] ?? 0);
 
 if ($file_id > 0) {
-    // 2. Authorization Check: Find the file details ONLY if it belongs to the logged-in user
+    // 4. Authorization check: only fetch the file if it belongs to this user
     $stmt = $conn->prepare("SELECT stored_name FROM file_registry WHERE id = ? AND owner_id = ?");
     $stmt->bind_param("ii", $file_id, $user_id);
     $stmt->execute();
@@ -20,14 +30,13 @@ if ($file_id > 0) {
         $stored_name = $file_info['stored_name'];
         $physical_file_path = __DIR__ . '/storage/' . $stored_name;
 
-        // 3. Database Deletion: Remove the registry row first
+        // 5. Remove DB record first, then clean up disk
         $delete_stmt = $conn->prepare("DELETE FROM file_registry WHERE id = ? AND owner_id = ?");
         $delete_stmt->bind_param("ii", $file_id, $user_id);
-        
+
         if ($delete_stmt->execute()) {
-            // 4. Physical Storage Cleanup: Remove the file from disk if it exists
             if (file_exists($physical_file_path)) {
-                unlink($physical_file_path); // unlink() deletes files in PHP
+                unlink($physical_file_path);
                 header("Location: upload.php?msg=deleted");
                 exit;
             } else {
@@ -37,7 +46,6 @@ if ($file_id > 0) {
         }
         $delete_stmt->close();
     } else {
-        // If the file does not belong to the user, throw an access error
         header("HTTP/1.0 403 Forbidden");
         die("Access Denied: Unauthorized deletion request.");
     }

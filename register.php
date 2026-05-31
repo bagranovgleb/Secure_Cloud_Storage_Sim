@@ -18,6 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // PASSWORD_DEFAULT relies on strong algorithms (currently bcrypt) and salts automatically.
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+        // --- ENCRYPTION SALT GENERATION ---
+        // A unique random salt per user, stored permanently.
+        // Combined with the user's password at login via PBKDF2 to derive a
+        // stable, deterministic encryption key — files survive session expiry and re-logins.
+        $enc_salt = bin2hex(random_bytes(16)); // 32-char hex string, stored in DB
+
         // Check if username already exists to prevent duplicate entries
         $check_stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
         $check_stmt->bind_param("s", $username);
@@ -27,9 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($check_stmt->num_rows > 0) {
             $message = "❌ Error: Username is already taken.";
         } else {
-            // Insert the secure user profile into the database
-            $stmt = $conn->prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)");
-            $stmt->bind_param("ss", $username, $hashed_password);
+            // Insert the secure user profile into the database (with enc_salt)
+            $stmt = $conn->prepare("INSERT INTO users (username, password_hash, enc_salt) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $username, $hashed_password, $enc_salt);
 
             if ($stmt->execute()) {
                 $message = "✅ Registration successful! You can now log in.";

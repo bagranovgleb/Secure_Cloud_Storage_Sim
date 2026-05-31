@@ -18,6 +18,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
 
 // Process the deletion request only if the form was formally submitted via POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_purge']) && $_POST['confirm_purge'] === 'YES') {
+    verify_csrf_token();
     
     if (isset($conn) && $conn instanceof mysqli) {
         
@@ -98,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_purge']) && $
     
     <!-- Double-Layer Confirmation: JavaScript popup gate + server POST validation -->
     <form action="delete_profile.php" method="POST" onsubmit="return confirm('Final verification check: Are you absolutely certain you want to purge your cloud file environment? This action cannot be reverted.');">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
         <input type="hidden" name="confirm_purge" value="YES">
         <a href="upload.php" class="btn-cancel">Cancel and Go Back</a>
         <button type="submit" class="btn-danger">Permanently Delete My Account</button>

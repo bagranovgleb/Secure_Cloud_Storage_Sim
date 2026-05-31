@@ -27,6 +27,7 @@ $current_admin_id = $_SESSION['user_id'];
 
 // 3. CASCADING DELETION ENGINE (Processes User + Disk Files)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
+    verify_csrf_token();
     $target_user_id = intval($_POST['target_user_id'] ?? 0);
 
     // Prevent Self-Deletion Disaster
@@ -155,6 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     if ($row['id'] !== $current_admin_id) {
                         ?>
                         <form action="admin_dashboard.php" method="POST" onsubmit="return confirm('🚨 CRITICAL WARNING: This will permanently delete this user and all of their encrypted data files from disk storage. This cannot be undone. Proceed?');" style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                             <input type="hidden" name="action" value="delete_user">
                             <input type="hidden" name="target_user_id" value="<?php echo $row['id']; ?>">
                             <button type="submit" class="btn-danger">Purge Account</button>
