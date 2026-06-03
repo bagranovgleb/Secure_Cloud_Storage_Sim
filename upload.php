@@ -74,9 +74,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['cloud_file'])) {
                 write_security_log($username, "QUOTA_EXCEEDED", "Upload blocked — would exceed 5GB quota.");
                 $error_message = "❌ Storage quota exceeded. Only {$available_mb} MB remaining.";
             }
-            // 4. PER-FILE 20MB CAP
-            elseif ($file_size > 20 * 1024 * 1024) {
-                $error_message = "❌ File size exceeds the 20MB per-file limit.";
+            // 4. PER-FILE 40MB CAP
+            elseif ($file_size > 40 * 1024 * 1024) {
+                $error_message = "❌ File size exceeds the 40MB per-file limit.";
             }
             else {
                 // Read raw binary contents for symmetric encryption
@@ -140,106 +140,285 @@ $stmt->close();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Secure Core Cloud Simulation Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f8f9fa; color: #333; }
-        .container { max-width: 700px; margin: 0 auto; }
-        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0056b3; }
-        .alert { padding: 10px; margin-bottom: 15px; border-radius: 4px; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f1f1f1; }
-        .nav-links { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-        .nav-links a { text-decoration: none; font-weight: bold; color: #007bff; }
-        .nav-links a:hover { text-decoration: underline; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Drive — CloudSim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/upload.css">
 </head>
 <body>
 
-<div class="container">
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+    <a href="upload.php" class="topbar-brand">
+        <div class="topbar-brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 15a4 4 0 004 4h10a4 4 0 001-7.9A5 5 0 1015.9 6L15 6a5 5 0 00-5 5l-1 .1A4 4 0 003 15z"/>
+            </svg>
+        </div>
+        <span class="topbar-brand-name">Cloud<span>Sim</span></span>
+    </a>
 
-    <div style="display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="<?= $avatar_src ?>" alt="User Profile Image" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #007bff;">
-            <div>
-                <h3 style="margin: 0; font-size: 18px;">Welcome back, <?= htmlspecialchars($username) ?>!</h3>
-                <span style="font-size: 12px; color: #666;">Secure Storage Environment Active</span>
-            </div>
-        </div>
-        <div>
-            <a href="profile.php" style="background: #007bff; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; font-size: 14px; font-weight: bold;">⚙️ Manage Profile</a>
-        </div>
+    <div class="topbar-spacer"></div>
+
+    <div class="topbar-actions">
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <a href="admin_dashboard.php" class="topbar-icon-btn" title="Admin Panel">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+        </a>
+        <?php endif; ?>
+        
+        <a href="profile.php" class="topbar-avatar-btn">
+            <img src="<?= $avatar_src ?>" alt="Profile">
+            <span><?= htmlspecialchars($username) ?></span>
+        </a>
+
+        <a href="logout.php" class="topbar-icon-btn" title="Sign out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+            </svg>
+        </a>
+        
     </div>
+</header>
 
-    <?php if (!empty($message)): ?>
-        <div class="alert alert-success"><?= $message ?></div>
-    <?php endif; ?>
-    <?php if (!empty($error_message)): ?>
-        <div class="alert alert-danger"><?= $error_message ?></div>
-    <?php endif; ?>
+<!-- ── LAYOUT ── -->
+<div class="layout">
 
-    <div class="card">
-        <h3>Upload File Asset to Encrypted Partition</h3>
-        <form action="upload.php" method="POST" enctype="multipart/form-data">
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+        
+
+        <a href="upload.php" class="sidebar-item active">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 15a4 4 0 004 4h10a4 4 0 001-7.9A5 5 0 1015.9 6L15 6a5 5 0 00-5 5l-1 .1A4 4 0 003 15z"/>
+            </svg>
+            My Drive
+        </a>
+
+        <a href="profile.php" class="sidebar-item">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            Profile
+        </a>
+
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <a href="admin_dashboard.php" class="sidebar-item">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Admin Panel
+        </a>
+        <?php endif; ?>
+
+        <div class="sidebar-divider"></div>
+
+        <label class="sidebar-new-btn" for="cloud_file_trigger" title="Upload a file">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" color="var(--blue)">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            New Upload
+        </label>
+
+        <!-- Storage usage bar -->
+        <div class="storage-section">
+            <?php
+                $total_quota = 5 * 1024 * 1024 * 1024;
+                $used_stmt = $conn->prepare("SELECT SUM(file_size) AS used FROM file_registry WHERE owner_id = ?");
+                $used_stmt->bind_param("i", $user_id);
+                $used_stmt->execute();
+                $used_row = $used_stmt->get_result()->fetch_assoc();
+                $used_stmt->close();
+                $bytes_used = $used_row['used'] ?? 0;
+                $pct = min(100, round(($bytes_used / $total_quota) * 100, 1));
+                $used_gb = round($bytes_used / (1024**3), 2);
+            ?>
+            <div class="storage-label">Storage</div>
+            <div class="storage-bar-wrap">
+                <div class="storage-bar" style="width: <?= $pct ?>%"></div>
+            </div>
+            <div class="storage-sub"><?= $used_gb ?> GB of 5 GB used</div>
+        </div>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main class="main">
+
+
+        <?php if (!empty($message)): ?>
+        <div class="alert alert-success">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <?= htmlspecialchars($message) ?>
+        </div>
+        <?php endif; ?>
+
+        <?php if (!empty($error_message)): ?>
+        <div class="alert alert-danger">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <?= htmlspecialchars($error_message) ?>
+        </div>
+        <?php endif; ?>
+
+        <!-- ── UPLOAD ZONE ── -->
+        <form action="upload.php" method="POST" enctype="multipart/form-data" id="uploadForm">
             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-            <div class="form-group">
-                <input type="file" name="cloud_file" required>
-            </div>
-            <button type="submit">Encrypt & Upload</button>
-        </form>
-    </div>
 
-    <div class="card">
-        <h3>Your Encrypted Cloud Files Storage Registry</h3>
-        <?php if (empty($files_list)): ?>
-            <p style="color: #666;">No secure file records found in your directory footprint.</p>
-        <?php else: ?>
-            <table>
+            <div class="upload-zone" id="uploadZone">
+                <input type="file" name="cloud_file" id="cloud_file_trigger" required>
+                <div class="upload-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                        <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+                    </svg>
+                </div>
+                <h3>Drag files here, or <span class="browse-link">browse</span></h3>
+                <p>Files are encrypted with AES-256 before storage &nbsp;·&nbsp; Max 40 MB per file</p>
+
+                <div class="file-chip" id="fileChip">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span id="fileChipName"></span>
+                    <button type="button" class="file-chip-clear" id="clearFile">×</button>
+                </div>
+            </div>
+
+            <div class="upload-submit-row">
+                <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                        <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+                    </svg>
+                    Encrypt &amp; Upload
+                </button>
+            </div>
+        </form>
+
+        <!-- ── FILES TABLE ── -->
+        <div class="files-card">
+            <div class="files-card-header">
+                <span class="files-card-title">My Files</span>
+                <span class="files-count"><?= count($files_list) ?> file<?= count($files_list) !== 1 ? 's' : '' ?></span>
+            </div>
+
+            <?php if (empty($files_list)): ?>
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/>
+                    </svg>
+                </div>
+                <h3>No files yet</h3>
+                <p>Upload your first file to get started. It will be encrypted automatically.</p>
+            </div>
+            <?php else: ?>
+            <table class="file-table">
                 <thead>
                     <tr>
-                        <th>File ID</th>
-                        <th>Encrypted System Tag</th>
+                        <th>Name</th>
                         <th>Size</th>
-                        <th>Timestamp</th>
-                        <th>Actions</th>
+                        <th>Uploaded</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($files_list as $f): ?>
-                        <tr>
-                            <td><?= intval($f['id']) ?></td>
-                            <td style="font-family: monospace; font-size: 11px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                <?= htmlspecialchars($f['original_name']) ?>
-                            </td>
-                            <td><?= number_format($f['file_size']) ?></td>
-                            <td><?= htmlspecialchars($f['uploaded_at']) ?></td>
-                            <td style="white-space: nowrap;">
-                                <a href="download.php?file_id=<?= intval($f['id']) ?>" style="color: #007bff; margin-right: 10px;">Download</a>
-                                <form action="delete.php" method="POST" style="display:inline;" onsubmit="return confirm('Delete this file? This cannot be undone.');">
+                    <?php
+                    $type_icons = [
+                        'image'       => ['bg'=>'#e8f0fe','icon'=>'🖼️'],
+                        'video'       => ['bg'=>'#fce8e6','icon'=>'🎬'],
+                        'audio'       => ['bg'=>'#e6f4ea','icon'=>'🎵'],
+                        'pdf'         => ['bg'=>'#fce8e6','icon'=>'📄'],
+                        'zip'         => ['bg'=>'#fff3e0','icon'=>'📦'],
+                        'text'        => ['bg'=>'#f1f3f4','icon'=>'📝'],
+                        'default'     => ['bg'=>'#e8f0fe','icon'=>'📁'],
+                    ];
+                    foreach ($files_list as $f):
+                        // Decrypt the stored filename — stored as bin2hex(name_iv) . bin2hex(encrypted_name)
+                        $display_name = 'Unknown file';
+                        if (!empty($f['original_name']) && isset($_SESSION['encryption_key'])) {
+                            $cipher_method   = 'aes-256-ctr';
+                            $iv_length       = openssl_cipher_iv_length($cipher_method);
+                            $name_iv_hex_len = $iv_length * 2;
+                            $name_iv         = hex2bin(substr($f['original_name'], 0, $name_iv_hex_len));
+                            $enc_name_b64    = hex2bin(substr($f['original_name'], $name_iv_hex_len));
+                            $enc_key         = hex2bin($_SESSION['encryption_key']);
+                            $decrypted       = openssl_decrypt($enc_name_b64, $cipher_method, $enc_key, 0, $name_iv);
+                            if ($decrypted !== false && $decrypted !== '') {
+                                $display_name = $decrypted;
+                            }
+                        }
+
+                        // Pick icon by file extension
+                        $ext = strtolower(pathinfo($display_name, PATHINFO_EXTENSION));
+                        $ext_map = [
+                            'jpg'=>'image','jpeg'=>'image','png'=>'image','gif'=>'image','webp'=>'image','svg'=>'image',
+                            'mp4'=>'video','mov'=>'video','avi'=>'video','mkv'=>'video',
+                            'mp3'=>'audio','wav'=>'audio','flac'=>'audio','ogg'=>'audio',
+                            'pdf'=>'pdf',
+                            'zip'=>'zip','rar'=>'zip','7z'=>'zip','tar'=>'zip','gz'=>'zip',
+                            'txt'=>'text','md'=>'text','csv'=>'text','log'=>'text',
+                        ];
+                        $icon_set = $type_icons[$ext_map[$ext] ?? 'default'];
+
+                        $size_bytes = intval($f['file_size']);
+                        if ($size_bytes < 1024) {
+                            $size_fmt = $size_bytes . ' B';
+                        } elseif ($size_bytes < 1024*1024) {
+                            $size_fmt = round($size_bytes/1024, 1) . ' KB';
+                        } else {
+                            $size_fmt = round($size_bytes/(1024*1024), 2) . ' MB';
+                        }
+                        $ts = htmlspecialchars($f['uploaded_at'] ?? '—');
+                    ?>
+                    <tr>
+                        <td>
+                            <div class="file-name-cell">
+                                <div class="file-type-icon" style="background:<?= $icon_set['bg'] ?>">
+                                    <?= $icon_set['icon'] ?>
+                                </div>
+                                <div>
+                                    <div class="file-name-text"><?= htmlspecialchars($display_name) ?></div>
+                                    <div class="file-id-badge">#<?= intval($f['id']) ?></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="file-size"><?= $size_fmt ?></td>
+                        <td class="file-date"><?= $ts ?></td>
+                        <td>
+                            <div class="file-actions">
+                                <a href="download.php?file_id=<?= intval($f['id']) ?>" class="action-btn action-btn-download">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Download
+                                </a>
+                                <form action="delete.php" method="POST" style="display:inline;" onsubmit="return confirm('Permanently delete this file? This cannot be undone.');">
                                     <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                                     <input type="hidden" name="file_id" value="<?= intval($f['id']) ?>">
-                                    <button type="submit" style="background:none; border:none; color:#dc3545; cursor:pointer; padding:0; font-size:14px;">Delete</button>
+                                    <button type="submit" class="action-btn action-btn-delete">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                                        Delete
+                                    </button>
                                 </form>
-                            </td>
-                        </tr>
+                            </div>
+                        </td>
+                    </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php endif; ?>
-    </div>
+            <?php endif; ?>
+        </div>
 
-    <div class="nav-links">
-        <a href="profile.php">⚙️ Personal Space Settings</a>
-        <a href="delete_profile.php" style="color: #dc3545;">⚠️ Delete Account</a>
-        <a href="logout.php" style="color: #6c757d;">Disconnect Session</a>
-    </div>
+        <!-- ── FOOTER ── -->
+        <div class="page-footer">
+                <div class="footer">This website is made by Bagranov Gleb for the project of Messina University</div>
+        </div>
 
+    </main>
 </div>
+
+<script src="js/upload.js"></script>
 
 </body>
 </html>

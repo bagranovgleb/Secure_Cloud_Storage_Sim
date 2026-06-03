@@ -1,0 +1,186 @@
+/* ============================================================
+   admin.css — CloudSim admin dashboard
+   Loaded by: admin_dashboard.php
+   Requires: main.css, dashboard.css
+   ============================================================ */
+
+/* ── STAT CHIPS ── */
+.stats-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    flex: 1;
+    min-width: 140px;
+}
+.stat-chip-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-3);
+    margin-bottom: 6px;
+}
+.stat-chip-value { font-size: 26px; font-weight: 500; color: var(--text); line-height: 1; }
+.stat-chip-sub   { font-size: 11px; color: var(--text-2); margin-top: 4px; }
+
+/* ── LOG BOX ── */
+.log-box {
+    background: #1a1b26;
+    padding: 0;
+    height: 320px;
+    overflow-y: auto;
+    font-family: 'Roboto Mono', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+}
+.log-box::-webkit-scrollbar       { width: 6px; }
+.log-box::-webkit-scrollbar-track { background: #1a1b26; }
+.log-box::-webkit-scrollbar-thumb { background: #3b3d52; border-radius: 3px; }
+.log-box::-webkit-scrollbar-thumb:hover { background: #5b5f7a; }
+
+/* ── LOG TOOLBAR ── */
+.log-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: #13141f;
+    border-bottom: 1px solid #2a2b3d;
+}
+.log-toolbar-left { display: flex; align-items: center; gap: 8px; }
+.log-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9ece6a;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+.log-live-label { font-family: 'Roboto Mono', monospace; font-size: 11px; color: #565f89; }
+.log-count      { font-family: 'Roboto Mono', monospace; font-size: 11px; color: #565f89; }
+.log-scroll-btn {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: #7aa2f7;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    transition: background .12s;
+}
+.log-scroll-btn:hover { background: rgba(122,162,247,.15); }
+
+/* ── LOG ROWS ── */
+.log-row {
+    display: flex;
+    gap: 0;
+    padding: 3px 20px;
+    border-bottom: 1px solid rgba(255,255,255,.03);
+    transition: background .1s;
+}
+.log-row:hover { background: rgba(255,255,255,.04); }
+.log-row:first-child { padding-top: 14px; }
+.log-row:last-child  { padding-bottom: 14px; border-bottom: none; }
+
+.log-ts {
+    color: #565f89;
+    flex-shrink: 0;
+    margin-right: 10px;
+}
+.log-ip {
+    color: #7aa2f7;
+    flex-shrink: 0;
+    margin-right: 10px;
+    min-width: 110px;
+}
+.log-user {
+    color: #bb9af7;
+    flex-shrink: 0;
+    margin-right: 10px;
+    min-width: 100px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.log-action {
+    flex-shrink: 0;
+    margin-right: 10px;
+    font-weight: 500;
+    min-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.log-detail {
+    color: #a9b1d6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+.log-empty {
+    padding: 20px;
+    color: #565f89;
+    text-align: center;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+}
+
+/* Action keyword colour coding */
+.log-action-green  { color: #9ece6a; }
+.log-action-red    { color: #f7768e; }
+.log-action-orange { color: #ff9e64; }
+.log-action-blue   { color: #7aa2f7; }
+.log-action-grey   { color: #565f89; }
+
+/* ── USER TABLE ── */
+.user-table { width: 100%; border-collapse: collapse; }
+.user-table th {
+    padding: 10px 20px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--text-3);
+    background: #fafafa;
+    border-bottom: 1px solid var(--border);
+}
+.user-table td {
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: middle;
+}
+.user-table tr:last-child td { border-bottom: none; }
+.user-table tbody tr { transition: background .1s; }
+.user-table tbody tr:hover td { background: #fafafa; }
+
+.user-cell { display: flex; align-items: center; gap: 10px; }
+.user-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+.user-avatar-placeholder.admin-av { background: #fce8e6; color: #c5221f; }
+.user-name { font-weight: 500; color: var(--text); }
+.user-id   { font-size: 11px; color: var(--text-3); font-family: 'Roboto Mono', monospace; }
+.user-date { color: var(--text-2); white-space: nowrap; }
+.self-label { font-size: 12px; color: var(--text-3); font-style: italic; }
