@@ -173,18 +173,5 @@ UPDATE users SET role = 'admin' WHERE username = 'your_username';
 
 ---
 
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Backend | PHP 8+ |
-| Database | MySQL |
-| Encryption | AES-256-CTR via OpenSSL |
-| Key derivation | PBKDF2-SHA256 (200,000 iterations) |
-| Frontend | HTML, CSS, JS (no frameworks) |
-| Fonts | Google Sans (Google Fonts) |
-| Icons | Feather Icons (inline SVG) |
-
----
 
 *Made by Bagranov Gleb as a project for Messina University*
