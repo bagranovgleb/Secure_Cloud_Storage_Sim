@@ -135,12 +135,8 @@
     font-size: 12px;
 }
 
-/* Action keyword colour coding */
-.log-action-green  { color: #9ece6a; }
-.log-action-red    { color: #f7768e; }
-.log-action-orange { color: #ff9e64; }
-.log-action-blue   { color: #7aa2f7; }
-.log-action-grey   { color: #565f89; }
+/* Action keyword — single unified style */
+.log-action { color: #a9b1d6; font-weight: 500; }
 
 /* ── USER TABLE ── */
 .user-table { width: 100%; border-collapse: collapse; }

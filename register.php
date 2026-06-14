@@ -29,6 +29,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validate email format
         elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $message = "❌ Please enter a valid email address.";
+        }
+        // Password strength check
+        elseif (strlen($password) < 8) {
+            $message = "❌ Password must be at least 8 characters.";
+        }
+        elseif (!preg_match('/[A-Z]/', $password)) {
+            $message = "❌ Password must contain at least one uppercase letter.";
+        }
+        elseif (!preg_match('/[a-z]/', $password)) {
+            $message = "❌ Password must contain at least one lowercase letter.";
+        }
+        elseif (!preg_match('/[0-9]/', $password)) {
+            $message = "❌ Password must contain at least one number.";
+        }
+        elseif (!preg_match('/[\W_]/', $password)) {
+            $message = "❌ Password must contain at least one special character (!@#$%^&* etc).";
         } else {
 
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -158,6 +174,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                         </svg>
                     </button>
+                </div>
+                <div id="strengthWrap" style="margin-top:8px; display:none;">
+                    <div id="strengthBar" style="height:3px; border-radius:2px; background:rgba(255,255,255,.1); overflow:hidden; margin-bottom:5px;">
+                        <div id="strengthFill" style="height:100%; width:0%; border-radius:2px; transition:width .3s, background .3s;"></div>
+                    </div>
+                    <span id="strengthLabel" style="font-size:11px; font-family:'Roboto Mono',monospace; letter-spacing:.3px;"></span>
                 </div>
             </div>
 

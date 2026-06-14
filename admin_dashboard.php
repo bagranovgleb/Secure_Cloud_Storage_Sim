@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     <div class="topbar-actions">
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-        <a href="admin_dashboard.php" class="topbar-icon-btn" title="Admin Panel">
+        <a href="admin_dashboard.php" class="topbar-icon-btn active" title="Admin Panel">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
@@ -170,14 +170,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             </svg>
             My Drive
         </a>
-        <a href="profile.php" class="sidebar-item active">
+        <a href="profile.php" class="sidebar-item">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
             Profile
         </a>
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-        <a href="admin_dashboard.php" class="sidebar-item">
+        <a href="admin_dashboard.php" class="sidebar-item active">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
@@ -282,24 +282,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 $detail = $m[5];
 
                                 // colour-code the action keyword
-                                $action_upper = strtoupper($action);
-                                if (str_contains($action_upper, 'SUCCESS') || str_contains($action_upper, 'LOGIN_SUCCESS') || str_contains($action_upper, 'UPLOAD_SUCCESS') || str_contains($action_upper, 'DOWNLOAD') || str_contains($action_upper, 'AVATAR_ENCRYPTED')) {
-                                    $ac = 'log-action-green';
-                                } elseif (str_contains($action_upper, 'FAIL') || str_contains($action_upper, 'REJECT') || str_contains($action_upper, 'DENY') || str_contains($action_upper, 'ILLEGAL') || str_contains($action_upper, 'SPOOF') || str_contains($action_upper, 'BLOCKED') || str_contains($action_upper, 'RATE_LIMIT')) {
-                                    $ac = 'log-action-red';
-                                } elseif (str_contains($action_upper, 'PURGE') || str_contains($action_upper, 'DELETE') || str_contains($action_upper, 'INTERCEPT') || str_contains($action_upper, 'PASSWORD_CHANGED')) {
-                                    $ac = 'log-action-orange';
-                                } elseif (str_contains($action_upper, 'LOGIN') || str_contains($action_upper, 'LOGOUT') || str_contains($action_upper, 'SESSION')) {
-                                    $ac = 'log-action-blue';
-                                } else {
-                                    $ac = 'log-action-grey';
-                                }
-
                                 echo "<div class='log-row'>";
                                 echo "<span class='log-ts'>[{$ts}]</span>";
                                 echo "<span class='log-ip'>[{$ip}]</span>";
                                 echo "<span class='log-user'>[{$user}]</span>";
-                                echo "<span class='log-action {$ac}'>[{$action}]</span>";
+                                echo "<span class='log-action'>[{$action}]</span>";
                                 echo "<span class='log-detail'>→ {$detail}</span>";
                                 echo "</div>";
                             } else {

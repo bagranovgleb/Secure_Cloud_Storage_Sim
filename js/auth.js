@@ -22,8 +22,50 @@
         });
     }
 
+    // ── Password strength indicator (register page only) ──
+    const strengthWrap  = document.getElementById('strengthWrap');
+    const strengthFill  = document.getElementById('strengthFill');
+    const strengthLabel = document.getElementById('strengthLabel');
+
+    if (pwInput && strengthWrap) {
+        pwInput.addEventListener('input', function () {
+            const val = this.value;
+
+            if (!val) {
+                strengthWrap.style.display = 'none';
+                return;
+            }
+            strengthWrap.style.display = 'block';
+
+            // Score each criterion
+            let score = 0;
+            if (val.length >= 8)          score++;
+            if (val.length >= 12)         score++;
+            if (/[A-Z]/.test(val))        score++;
+            if (/[a-z]/.test(val))        score++;
+            if (/[0-9]/.test(val))        score++;
+            if (/[\W_]/.test(val))        score++;
+
+            // Map score to level
+            let pct, color, label;
+            if (score <= 2) {
+                pct = 25;  color = '#f7768e'; label = '⚠ Weak';
+            } else if (score <= 4) {
+                pct = 60;  color = '#ff9e64'; label = '◎ Fair';
+            } else if (score === 5) {
+                pct = 80;  color = '#e0af68'; label = '● Good';
+            } else {
+                pct = 100; color = '#9ece6a'; label = '✓ Strong';
+            }
+
+            strengthFill.style.width      = pct + '%';
+            strengthFill.style.background = color;
+            strengthLabel.style.color     = color;
+            strengthLabel.textContent     = label;
+        });
+    }
+
     // ── Submit spinner ──
-    // Works for both loginForm and registerForm
     const form = document.getElementById('loginForm') || document.getElementById('registerForm');
     if (form) {
         form.addEventListener('submit', function () {
